@@ -19,145 +19,103 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 	  
-	  		<!-- Customised CSS -->
+	  	<!-- Customised CSS -->
 		<link href="additionalstyles.css" rel="stylesheet">
 		
 	</head>
 	
 	<body>
-		<div id="chart"></div>
-		<div id="dataset-picker"> </div>
+		<svg width="960" height="500"></svg>
 		<script>
 			// Define the file directory
-			var jsonFile = "../data/git-commit-frequency.json";
-			
+			var csvFile = "../data/online-shoppers-by-age-group.csv";
+
 			// Create the division of the chart
-			var margin = { top: 50, right: 0, bottom: 100, left: 30 },
-				width = 960 - margin.left - margin.right,
-				height = 280 - margin.top - margin.bottom,
-				gridSize = Math.floor(width / 52),
-				legendElementWidth = gridSize*2,
-				buckets = 9,
-				colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
-				daysOfTheWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-				weeks = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", 		   	 "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", 			 	 "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52"];
+			var svg = d3.select("svg"),
+				margin = {top: 20, right: 20, bottom: 30, left: 40},
+				width = +svg.attr("width") - margin.left - margin.right,
+				height = +svg.attr("height") - margin.top - margin.bottom,
+				g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			// Move the chart
-			var svg = d3.select("#chart").append("svg")
-				.attr("width", width + margin.left + margin.right)
-				.attr("height", height + margin.top + margin.bottom)
-				.append("g")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			var x0 = d3.scaleBand()
+				.rangeRound([0, width])
+				.paddingInner(0.1);
 
-			// Day Label Settings
-			var dayLabels = svg.selectAll(".dayLabel")
-				.data(daysOfTheWeek)
-				.enter().append("text")
-				.text(function (d) { return d; })
-				.attr("x", 0)
-				.attr("y", function (d, i) { return i * gridSize; })
-				.style("text-anchor", "end")
-				.attr("transform", "translate(-6," + gridSize / 1.5 + ")")
-				.attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
+			var x1 = d3.scaleBand()
+				.padding(0.05);
 
-			// Week Label Settings
-			var weekLabels = svg.selectAll(".weekLabel")
-				.data(weeks)
-				.enter().append("text")
-				.text(function(d) { return d; })
-				.attr("x", function(d, i) { return i * gridSize; })
-				.attr("y", 0)
-				.style("text-anchor", "middle")
-				.attr("transform", "translate(" + gridSize / 2 + ", -6)")
-				.attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
+			var y = d3.scaleLinear()
+				.rangeRound([height, 0]);
 
-			// Create the Heat Map using D3
-			d3.json(jsonFile, function(error,data){
-				// Refine and Clean data into a proper structure, {day, week, commits}
-				var refineData = parseAndCleanData(data);
-				
-				// Computes the minimum and Maximum number of commits {return [min, max]}
-				var minAndMax = d3.extent(refineData, function(d){return d.commits;});
-				
-				/**
-				 * Define the colour range into equal parts between the min and max value
-				 * Example if domain(10,100) and range([1,2,3])
-				 * width 10 to 40 will be 1
-				 * width 40 to 70 will be 2
-				 * width 70 to 100 will be 3
-				 */
-				var colorScale = d3.scaleQuantile()
-								   .domain(minAndMax)
-								   .range(colors);
-				
-				// Bind data
-				var blocks = svg.selectAll("rect").data(refineData);
-				
-				// Enter the blocks
-				blocks.enter().append("rect")
-					.attr("x", function(d) { return (d.week-1) * gridSize; })
-					.attr("y", function(d) { return (d.day-1) * gridSize; })
-					.attr("rx", 4)
-					.attr("ry", 4)
-					.attr("class", "hour bordered")
-					.attr("width", gridSize)
-					.attr("height", gridSize)
-					.style("fill", colors[0])
-				
-				// Update
-				.merge(blocks).transition().duration(1000)
-              		.style("fill", function(d) { return colorScale(d.commits); });
-				
-				// Exit method to remove unused elements
-				blocks.exit().remove();
-				
-				
-				// Bind Data
-				var legend = svg.selectAll(".legend")
-					.data([0].concat(colorScale.quantiles(), (d) => d));
+			var z = d3.scaleOrdinal()
+				.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
-				// Group the data
-				var legend_g = legend.enter().append("g").attr("class", "legend");
+			d3.csv(csvFile, function(d, i, columns) {
+			  for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+			  return d;
+			}, function(error, data) {
+			  if (error) throw error;
 
-				// Append the rectale to the group
-				legend_g.append("rect")
-					.attr("x", function(d, i) { return legendElementWidth * i; })
-					.attr("y", height)
-					.attr("width", legendElementWidth)
-					.attr("height", gridSize / 2)
-					.style("fill", function(d, i) { return colors[i]; });
+			  var keys = data.columns.slice(1);
 
-				// Append text
-				legend_g.append("text")
-					.attr("class", "mono")
-					.text(function(d) { return "≥ " + Math.round(d); })
-					.attr("x", function(d, i) { return legendElementWidth * i; })
-					.attr("y", height + gridSize);
+			  x0.domain(data.map(function(d) { return d.year; }));
+			  x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+			  y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
 
-				// Exit Method to remove used elements
-				legend.exit().remove();
-			});
-			
-			/**
-			 * Parse and Clean the JSON file into a new data structure
-			 * Each Object will consist of the following field:
-			 * 1) [day] Day of the Week (1 to 7)
-			 * 2) [week] Week of the Year (1 to 52)
-			 * 3) [commits] Number of git commits made on the day
-			 */
-			function parseAndCleanData(d){
-				var arr = [];
-				for(var j = 0; j < d[0].days.length; j++){
-					for(var i = 0; i < d.length; i++){
-						var data = new Object()
-						data.day = j+1;
-						data.week = i+1;
-						data.commits = +d[i].days[j]
-						arr.push(data);
-					}
-				}
-				return arr;
-			}
-    </script>
-  </body>
+			  g.append("g")
+				.selectAll("g")
+				.data(data)
+				.enter().append("g")
+				  .attr("transform", function(d) { return "translate(" + x0(d.year) + ",0)"; })
+				.selectAll("rect")
+				.data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+				.enter().append("rect")
+				  .attr("x", function(d) { return x1(d.key); })
+				  .attr("y", function(d) { return y(d.value); })
+				  .attr("width", x1.bandwidth())
+				  .attr("height", function(d) { return height - y(d.value); })
+				  .attr("fill", function(d) { return z(d.key); });
+
+			  g.append("g")
+				  .attr("class", "axis")
+				  .attr("transform", "translate(0," + height + ")")
+				  .call(d3.axisBottom(x0));
+
+			  g.append("g")
+				  .attr("class", "axis")
+				  .call(d3.axisLeft(y).ticks(null, "s"))
+				.append("text")
+				  .attr("x", 2)
+				  .attr("y", y(y.ticks().pop()) + 0.5)
+				  .attr("dy", "0.32em")
+				  .attr("fill", "#000")
+				  .attr("font-weight", "bold")
+				  .attr("text-anchor", "start")
+				  .text("Population");
+
+			  var legend = g.append("g")
+				  .attr("font-family", "sans-serif")
+				  .attr("font-size", 10)
+				  .attr("text-anchor", "end")
+				.selectAll("g")
+				.data(keys.slice().reverse())
+				.enter().append("g")
+				  .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+			  legend.append("rect")
+				  .attr("x", width - 19)
+				  .attr("width", 19)
+				  .attr("height", 19)
+				  .attr("fill", z);
+
+			  legend.append("text")
+				  .attr("x", width - 24)
+				  .attr("y", 9.5)
+				  .attr("dy", "0.32em")
+				  .text(function(d) { return d; });
+		});
+
+		</script>
+   
+	</body>
 </html>
