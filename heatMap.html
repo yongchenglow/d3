@@ -9,7 +9,6 @@
 		
 		<!-- D3 -->
 		<script src="https://d3js.org/d3.v4.min.js"></script>
-		<script src="d3-tip.js"></script>
 		
 		<!-- Google Font (ROBOTO) -->
 		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
@@ -36,7 +35,7 @@
 				width = 960 - margin.left - margin.right,
 				height = 280 - margin.top - margin.bottom,
 				gridSize = Math.floor(width / 52),
-				legendElementWidth = gridSize*2,
+				legendElementWidth = gridSize*3,
 				buckets = 4,
 				defaultColor = "#f0f7da",
 				colors = ["#c9df8a","#77ab59","#36802d","#234d20"],
@@ -121,26 +120,15 @@
 						var xPosition = d3.select(this).attr("x");
 						var yPosition = d3.select(this).attr("y");
 						tooltip
-							.style("left", xPosition - 53 + "px")
-              				.style("top", yPosition - (-15) + "px")
+							.style("left", xPosition - 54 + "px")
+              				.style("top", yPosition - (-5) + "px")
               				.style("display", "inline")
-              				.html(d.commits + " contributions on Feb 19, 2017");
-						d3.select(this).attr("class", "selected"); //Change the border of the cude
-						//tooltip.style("display", null);
-						//d3.select(this).attr("class", "noBorder");
+              				.html(d.commits + " contributions" + " on " + months[d.date.getMonth()] + " " + d.date.getDate() + ", " + d.date.getFullYear());
+						d3.select(this).attr("class", "selected"); //Change the border of the rectangle
 					})
 					.on("mouseout", function() {
 						tooltip.style("display", "none");
 						d3.select(this).attr("class", "noBorder");
-					})
-					.on("mousemove", function(d){
-						/*tooltip
-						    //.style("right", d3.event.pageX + "px")
-							.style("left", d3.event.pageX - 90 + "px")
-              				.style("top", d3.event.pageY - 40 +"px")
-              				.style("display", "inline-block")
-              				.html(d.commits + " contributions on Feb 19, 2017");
-						d3.select(this).attr("class", "selected"); //Change the border of the cude*/
 					})
 				
 				// Update
@@ -152,15 +140,8 @@
 							return colorScale(d.commits);
 					});
 				
-				
-				
 				// Tooltip
 				var tooltip = d3.select("body").append("div").attr("class", "d3-tip");
-				
-				// Tootltip text
-				//tooltip.append("text");
-				
-
 				
 				// Exit method to remove unused elements
 				blocks.exit().remove();
@@ -178,27 +159,49 @@
 					.attr("x", function(d, i) { return legendElementWidth * i; })
 					.attr("y", height)
 					.attr("width", legendElementWidth)
-					.attr("height", gridSize/2)
+					.attr("height", gridSize*0.75)
 					.style("fill", function(d,i) { 
 						if(i == 0)
 							return defaultColor;
 						else
 							return colors[i-1];
+					})
+					.on("mouseover", function(d){					
+						var xPosition = d3.select(this).attr("x");
+						var yPosition = d3.select(this).attr("y");
+						var blockNumber = xPosition/legendElementWidth;
+						var numberOfXCommits = 0;
+						var arr = [0,1].concat(colorScale.quantiles());
+						var steps = arr[2] - arr[1];
+						for(var i = arr[blockNumber]; i < arr[blockNumber]+steps; i++)
+							numberOfXCommits += computeNumberOfXCommits(i, refineData);
+						tooltip
+							.style("left", xPosition - (-11) + "px")
+              				.style("top", yPosition - (-5) + "px")
+              				.style("display", "inline")
+              				.html(numberOfXCommits + " times");
+						d3.select(this).attr("class", "selected"); //Change the border of the rectangle
+					})
+					.on("mouseout", function() {
+						tooltip.style("display", "none");
+						d3.select(this).attr("class", "noBorder");
 					});
 				
 				// Append text
 				legend_g.append("text")
 					.attr("class", "mono")
-					.text(function(d) { 
+					.text(function(d,i) { 
 						var arr = colorScale.quantiles();
 						var steps = arr[1] - arr[0] - 1;
 						if(d == 0)
 							return Math.round(d);
+						else if(i == buckets)
+							return "\u2265 "  + Math.round(d)
 						else
 							return Math.round(d) + " - " + (Math.round(d)+steps);
 					})
 					.attr("x", function(d, i) { return legendElementWidth * (i+0.5); })
-					.attr("y", height + gridSize*1.2)
+					.attr("y", height + gridSize*1.5)
 					.style("text-anchor", "middle");
 				
 				// Exit Method to remove used elements
@@ -221,6 +224,8 @@
 						data.day = j+1;
 						data.week = i+1;
 						data.commits = +d[i].days[j];
+						data.date = new Date(+d[i].week * 1000);
+						data.date.setDate(data.date.getDate() + data.day);
 						arr.push(data);
 					}
 				}
@@ -246,6 +251,20 @@
 				
 				// Return the newMin and newMax
 				return [newMin, newMax];
+			}
+			
+			/**
+			 * Function to count the number of times the person commited x times during the day
+			 * Precondition: data is from the JSON file and x is a valid number
+			 * Postcondition: return the number of times the person commited X times during the day
+			 */
+			function computeNumberOfXCommits (x, d){
+				var numTimes = 0;
+				for(var i = 0; i < d.length; i++){
+					if(d[i].commits == x)
+						numTimes++;
+				}
+				return numTimes;
 			}
     	</script>
 	</body>

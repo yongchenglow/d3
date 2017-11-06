@@ -27,7 +27,7 @@ text.axis-worktime {
 
 .d3-tip {
 	line-height: 1;
-	padding: 6px;
+	padding: 11px;
 	background: rgba(0, 0, 0, 0.8);
 	color: #fff;
 	border-radius: 4px;
@@ -43,8 +43,8 @@ text.axis-worktime {
 .d3-tip:after {
 	display: table-row;
 	font-size: 10px;
-	width: 94%;
-	line-height: 2;
+	width: 84%;
+	line-height: 3;
 	color: rgba(0, 0, 0, 0.8);
 	content: "\25BC";
 	position: absolute;
