@@ -111,25 +111,27 @@
 				blocks.enter().append("rect")
 					.attr("x", function(d) { return (d.week-1) * gridSize; })
 					.attr("y", function(d) { return (d.day-1) * gridSize; })
-					.attr("rx", 4)
-					.attr("ry", 4)
-					.attr("class", "hour bordered")
-					.attr("width", gridSize)
-					.attr("height", gridSize)
+					.attr("rx", 2)
+					.attr("ry", 2)
+					.attr("class", "bordered")
+					.attr("width", gridSize*0.9)
+					.attr("height", gridSize*0.9)
 					.style("fill", defaultColor)
-					/*.on("mouseover", function(d){
-						.duration(200)
-						.style("opacity", .9);
-						div.html(d.commit + "contributions on Jan 31 2017")
-							.style("left", (d3.event.pageX) + "px")
-							.style("top", (d3.event.pageY - 28) + "px");
-					
+					.on("mouseover", function(){
+						tooltip.style("display", null);
+						d3.select(this).attr("class", "bordered");
 					})
-					.on("mouseout", function(d) {
-						div.transition()
-							.duration(500)
-							.style("opacity", 0);
-					});*/
+					.on("mouseout", function() {
+						tooltip.style("display", "none");
+						d3.select(this).attr("class", "bordered");
+					})
+					.on("mousemove", function(d){
+						var xPos = d3.mouse(this)[0] - 15;
+						var yPos = d3.mouse(this)[1] - 55;
+						tooltip.attr("transform","translate(" + xPos + "," + yPos + ")");
+						tooltip.select("text").text(d.commits + " contributions on Feb 19, 2017");
+						d3.select(this).attr("class", "selected");
+					})
 				
 				// Update
 				.merge(blocks).transition().duration(1000)
@@ -139,6 +141,16 @@
 						else
 							return colorScale(d.commits);
 					});
+				
+				var tooltip = svg.append("g")
+					.attr("class", tooltip)
+					.style("display", "none");
+				
+				tooltip.append("text")
+					.attr("x",15)
+					.attr("dy", "1.2em")
+					.style("font-size", "1.25em")
+					.attr("font-weight", "bold");
 				
 				// Exit method to remove unused elements
 				blocks.exit().remove();
