@@ -9,6 +9,7 @@
 		
 		<!-- D3 -->
 		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script src="d3-tip.js"></script>
 		
 		<!-- Google Font (ROBOTO) -->
 		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
@@ -21,7 +22,6 @@
 	  
 	  	<!-- Customised CSS -->
 		<link href="additionalstyles.css" rel="stylesheet">
-		
 	</head>
 	
 	<body>
@@ -32,7 +32,7 @@
 			var jsonFile = "../data/git-commit-frequency.json";
 			
 			// Create the division of the chart
-			var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+			var margin = { top: 50, right: 100, bottom: 100, left: 30 },
 				width = 960 - margin.left - margin.right,
 				height = 280 - margin.top - margin.bottom,
 				gridSize = Math.floor(width / 52),
@@ -41,7 +41,6 @@
 				defaultColor = "#f0f7da",
 				colors = ["#c9df8a","#77ab59","#36802d","#234d20"],
 				daysOfTheWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-				weeks = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", 		   	 "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", 			 	 "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52"],
 				months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 			
 			// Move the chart
@@ -104,6 +103,8 @@
 					.attr("transform", "translate(" + gridSize / 2 + ", -6)")
 					.attr("class", "timeLabel mono axis axis-worktime");
 				
+
+				
 				// Bind data
 				var blocks = svg.selectAll("rect").data(refineData);
 				
@@ -113,24 +114,33 @@
 					.attr("y", function(d) { return (d.day-1) * gridSize; })
 					.attr("rx", 2)
 					.attr("ry", 2)
-					.attr("class", "bordered")
 					.attr("width", gridSize*0.9)
 					.attr("height", gridSize*0.9)
 					.style("fill", defaultColor)
-					.on("mouseover", function(){
-						tooltip.style("display", null);
-						d3.select(this).attr("class", "bordered");
+					.on("mouseover", function(d){					
+						var xPosition = d3.select(this).attr("x");
+						var yPosition = d3.select(this).attr("y");
+						tooltip
+							.style("left", xPosition - 53 + "px")
+              				.style("top", yPosition - (-15) + "px")
+              				.style("display", "inline")
+              				.html(d.commits + " contributions on Feb 19, 2017");
+						d3.select(this).attr("class", "selected"); //Change the border of the cude
+						//tooltip.style("display", null);
+						//d3.select(this).attr("class", "noBorder");
 					})
 					.on("mouseout", function() {
 						tooltip.style("display", "none");
-						d3.select(this).attr("class", "bordered");
+						d3.select(this).attr("class", "noBorder");
 					})
 					.on("mousemove", function(d){
-						var xPos = d3.mouse(this)[0] - 15;
-						var yPos = d3.mouse(this)[1] - 55;
-						tooltip.attr("transform","translate(" + xPos + "," + yPos + ")");
-						tooltip.select("text").text(d.commits + " contributions on Feb 19, 2017");
-						d3.select(this).attr("class", "selected");
+						/*tooltip
+						    //.style("right", d3.event.pageX + "px")
+							.style("left", d3.event.pageX - 90 + "px")
+              				.style("top", d3.event.pageY - 40 +"px")
+              				.style("display", "inline-block")
+              				.html(d.commits + " contributions on Feb 19, 2017");
+						d3.select(this).attr("class", "selected"); //Change the border of the cude*/
 					})
 				
 				// Update
@@ -142,15 +152,15 @@
 							return colorScale(d.commits);
 					});
 				
-				var tooltip = svg.append("g")
-					.attr("class", tooltip)
-					.style("display", "none");
 				
-				tooltip.append("text")
-					.attr("x",15)
-					.attr("dy", "1.2em")
-					.style("font-size", "1.25em")
-					.attr("font-weight", "bold");
+				
+				// Tooltip
+				var tooltip = d3.select("body").append("div").attr("class", "d3-tip");
+				
+				// Tootltip text
+				//tooltip.append("text");
+				
+
 				
 				// Exit method to remove unused elements
 				blocks.exit().remove();
