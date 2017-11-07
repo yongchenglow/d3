@@ -7,6 +7,8 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
+		<title>heatmap</title>
+		
 		<!-- D3 -->
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 		
@@ -14,26 +16,70 @@
 		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 		
 		<!-- Bootstrap -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/additionalstyles.css" rel="stylesheet">
+		<link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+		<script src="js/jquery-3.2.1.js"></script>
 	  
-	  	<!-- Customised CSS -->
-		<link href="additionalstyles.css" rel="stylesheet">
 	</head>
 	
 	<body>
-		<div id="chart"></div>
-		<div id="dataset-picker"> </div>
+		<nav class="navbar navbar-inverse navbar-fixed-top" id="mainNav">
+			<div class="container-fluid">
+				<div class="navbar-header">					
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNavbar">
+						<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#top">
+						<span class="glyphicon glyphicon-stats"></span>
+						 Data Visualisation
+					</a>
+				</div>
+				<div class="collapse navbar-collapse" id="mainNavbar">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="#gitCommit">Git Commits</a></li>
+						<li><a href="#OnlineShoppers">Online Shoppers</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		
+		<!--Profile-->
+		<header id="profile">
+		<br>
+		<br>
+			<div class="container">
+				<br>
+				<br>
+				<div class="text-center">
+					<h1><b>Data Visualisation with D3</b></h1>
+					<h4>Low Yong Cheng</h4>
+					<h4>NUS Computer Engineering Year 3</h4>
+				</div>
+				<br>
+				<br>
+			</div>
+		<div class="container">
+			<div class="text-center">
+				<h3>Heat Map of Git Commits</h3>
+			</div>
+			<div id="gitCommit" class="tableHeatMap"></div>
+			<br>
+			<br>
+			<br>
+		</div>
+		
 		<script>
 			// Define the file directory
 			var jsonFile = "../data/git-commit-frequency.json";
 			
 			// Create the division of the chart
-			var margin = { top: 50, right: 100, bottom: 100, left: 30 },
-				width = 960 - margin.left - margin.right,
-				height = 280 - margin.top - margin.bottom,
+			var margin = { top: 30, right: 20, bottom: 30, left: 50 },
+				width = 800 - margin.left - margin.right,
+				height = 170 - margin.top - margin.bottom,
 				gridSize = Math.floor(width / 52),
 				legendElementWidth = gridSize*3,
 				buckets = 4,
@@ -43,7 +89,7 @@
 				months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 			
 			// Move the chart
-			var svg = d3.select("#chart").append("svg")
+			var svg = d3.select("#gitCommit").append("svg")
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom)
 				.append("g")
@@ -70,6 +116,19 @@
 				var colorScale = d3.scaleQuantile()
 									.domain(minAndMaxArray)
 									.range(colors);
+				
+				// Compute the number of times the person committed in a particular range
+				var numberOfXCommits = [];
+				var tempNumberOfXCommits = 0;
+				var arr = [0,1].concat(colorScale.quantiles());
+				var steps = arr[2] - arr[1];
+				for(var i = 0; i <= arr[arr.length-1]; i++){
+					tempNumberOfXCommits += computeNumberOfXCommits(i, refineData);
+					if(i == 0 || i%2 == 0 || i == arr[arr.length-1]){
+						numberOfXCommits.push(tempNumberOfXCommits);
+						tempNumberOfXCommits = 0;
+					}
+				}
 				
 				// Day Label Settings
 				var dayLabels = svg.selectAll(".dayLabel")
@@ -119,11 +178,14 @@
 					.on("mouseover", function(d){					
 						var xPosition = d3.select(this).attr("x");
 						var yPosition = d3.select(this).attr("y");
+						var boundary = document.getElementById("gitCommit");
+						var box = boundary.getBoundingClientRect();
 						tooltip
-							.style("left", xPosition - 54 + "px")
-              				.style("top", yPosition - (-5) + "px")
+							.style("left", xPosition - (-box.left + 32) + "px")
+              				.style("top", yPosition - (-box.top + 15) + "px")
               				.style("display", "inline")
-              				.html(d.commits + " contributions" + " on " + months[d.date.getMonth()] + " " + d.date.getDate() + ", " + d.date.getFullYear());
+							.attr("class", "d3-tip")
+              				.html(d.commits +" contributions" + "<span style='color:grey'>" + " on " + months[d.date.getMonth()] + " " + d.date.getDate() + ", " + d.date.getFullYear() + "</span>");
 						d3.select(this).attr("class", "selected"); //Change the border of the rectangle
 					})
 					.on("mouseout", function() {
@@ -132,7 +194,7 @@
 					})
 				
 				// Update
-				.merge(blocks).transition().duration(1000)
+				.merge(blocks).transition().duration(3000)
               		.style("fill", function(d) { 
 						if(d.commits == 0)
 							return defaultColor;
@@ -141,7 +203,7 @@
 					});
 				
 				// Tooltip
-				var tooltip = d3.select("body").append("div").attr("class", "d3-tip");
+				var tooltip = d3.select("body").append("div");
 				
 				// Exit method to remove unused elements
 				blocks.exit().remove();
@@ -170,16 +232,14 @@
 						var xPosition = d3.select(this).attr("x");
 						var yPosition = d3.select(this).attr("y");
 						var blockNumber = xPosition/legendElementWidth;
-						var numberOfXCommits = 0;
-						var arr = [0,1].concat(colorScale.quantiles());
-						var steps = arr[2] - arr[1];
-						for(var i = arr[blockNumber]; i < arr[blockNumber]+steps; i++)
-							numberOfXCommits += computeNumberOfXCommits(i, refineData);
+						var boundary = document.getElementById("gitCommit");
+						var box = boundary.getBoundingClientRect();
 						tooltip
-							.style("left", xPosition - (-11) + "px")
-              				.style("top", yPosition - (-5) + "px")
+							.style("left", xPosition - (-box.left - 32) + "px")
+              				.style("top", yPosition - (-box.top +15) + "px")
               				.style("display", "inline")
-              				.html(numberOfXCommits + " times");
+							.attr("class", "d3-tip-legend")
+              				.html(numberOfXCommits[blockNumber] + " times");
 						d3.select(this).attr("class", "selected"); //Change the border of the rectangle
 					})
 					.on("mouseout", function() {
