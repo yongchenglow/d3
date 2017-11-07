@@ -59,7 +59,7 @@
 			</div>
 			<div class="container">
 				<div class="text-center">
-					<h3>Number of Internet Users</h3>
+					<h3>Population age groups of Online Shoppers</h3>
 				</div>
 				<div id="internetUser" class="groupBarChart"></div>
 				<br>
@@ -111,11 +111,17 @@
 
 					// Slice the data, from a certain index
 					var keys = data.columns.slice(1);
+					
+					// Tooltip
+					var tooltip = d3.select("body").append("div");
 
-					// Create the bars
+					// Create the bars domain
 					group.domain(data.map(function(d) { return d.year; }));
 					bar.domain(keys).rangeRound([0, group.bandwidth()]);
 					barHeight.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+					
+					var arr = [0,0,0,0,0,0,0];
+					var totalUsers = 0;
 					
 					
 					// Bind Data
@@ -128,9 +134,29 @@
 						.data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
 						.enter().append("rect")
 						.attr("x", function(d) { return bar(d.key); })
-						.attr("y", function(d) { return barHeight(d.value); })
+						.attr("y", function(d) { 
+							totalUsers += d.value;
+							arr[(bar(d.key)-2)/10] += d.value;
+							return barHeight(d.value);
+						})
 						.style("fill", defaultColor)
-
+						.on("mouseover", function(d){
+							tooltip.style("display", null);
+							d3.select(this).attr("class", "noBorder");
+						})
+						.on("mouseout", function() {
+							tooltip.style("display", "none");
+							d3.select(this).attr("class", "noBorder");
+						})
+						.on("mousemove", function(d){
+							tooltip
+								.style("left", d3.event.layerX - 80 + "px")
+								.style("top", d3.event.layerY - 50 + "px")
+								.style("display", "inline")
+								.attr("class", "d3-tip-bar")
+								.html(d.value + " users" + "<span style='color:grey'> from " + d.key + "</span>");
+							d3.select(this).attr("class", "selected"); //Change the border of the rectangle
+						})
 					
 					// Update
 					.merge(groupBarChart).transition().duration(3000)
@@ -161,19 +187,54 @@
 						.selectAll("g")
 						.data(keys.slice().reverse())
 						.enter().append("g")
-						.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+						.attr("transform", function(d, i) {	return "translate(0," + i * 20 + ")"; })
 
 					// Append the rectangle to the legend group
 					chartLegend.append("rect")
-						.attr("x", width + 10)
+						.attr("x", width + 15)
 						.attr("y", height - 180)
 						.attr("width", 10)
 						.attr("height", 10)
-						.attr("fill", colour);
+						.style("fill", defaultColor)
+						.on("mouseover", function(d){
+							tooltip.style("display", null);
+							d3.select(this).attr("class", "noBorder");
+						})
+						.on("mouseout", function() {
+							tooltip.style("display", "none");
+							d3.select(this).attr("class", "noBorder");
+						})
+						.on("mousemove", function(d){
+							var x = 0;
+							if(d3.event.layerY < 395)
+								x = 6;
+							else if(d3.event.layerY < 415)
+								x = 5;
+							else if(d3.event.layerY < 435)
+								x = 4;
+							else if(d3.event.layerY < 455)
+								x = 3;
+							else if(d3.event.layerY < 475)
+								x = 2;
+							else if(d3.event.layerY < 495)
+								x = 1;
+							else
+								x = 0;
+							tooltip
+								.style("left", d3.event.layerX - 50 + "px")
+								.style("top", d3.event.layerY - 50 + "px")
+								.style("display", "inline")
+								.attr("class", "d3-tip-bar-legend")
+								.html(parseFloat(arr[x]/totalUsers*100).toFixed(2)+ "% <span style='color:grey'> of users</span>");
+							d3.select(this).attr("class", "selected"); //Change the border of the rectangle
+						})
+					
+					.merge(chartLegend).transition().duration(3000)
+						.style("fill", colour);
 
 					// Append text to the legend
 					chartLegend.append("text")
-						.attr("x", width + 25)
+						.attr("x", width + 30)
 						.attr("y", height - 180 + 9.5)
 						.attr("class", "mono")
 						.text(function(d) { return d; });

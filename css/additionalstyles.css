@@ -144,7 +144,34 @@ text.axis-worktime {
 	pointer-events: none;
 }
 
-.d3-tip-legend {
+.d3-tip-bar {
+	line-height: 1;
+	padding: 11px;
+	background: rgba(0, 0, 0, 0.9);
+	color: #fff;
+	border-radius: 4px;
+	font-size: 12px;
+	position: absolute;
+	display: none;
+	min-width: 80px;
+	height: auto;
+	text-align: center;
+	pointer-events: none;
+}
+
+.d3-tip-bar:after {
+	display: table-row;
+	font-size: 10px;
+	width: 140px;
+	line-height: 3;
+	color: rgba(0, 0, 0, 0.9);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+	pointer-events: none;
+}
+
+.d3-tip-heat-legend {
 	line-height: 1;
 	padding: 11px;
 	background: rgba(0, 0, 0, 0.9);
@@ -160,10 +187,38 @@ text.axis-worktime {
 }
 
 /* Creates a small triangle extender for the tooltip */
-.d3-tip-legend:after {
+.d3-tip-heat-legend:after {
 	display: table-row;
 	font-size: 10px;
-	width: 60px;
+	width: 85px;
+	line-height: 3;
+	color: rgba(0, 0, 0, 0.9);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+	pointer-events: none;
+}
+
+.d3-tip-bar-legend {
+	line-height: 1;
+	padding: 11px;
+	background: rgba(0, 0, 0, 0.9);
+	color: #fff;
+	border-radius: 4px;
+	font-size: 12px;
+	position: absolute;
+	display: none;
+	min-width: 80px;
+	height: auto;
+	text-align: center;
+	pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip-bar-legend:after {
+	display: table-row;
+	font-size: 10px;
+	width: 85px;
 	line-height: 3;
 	color: rgba(0, 0, 0, 0.9);
 	content: "\25BC";

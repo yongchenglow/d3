@@ -237,17 +237,17 @@
 							var boundary = document.getElementById("gitCommit");
 							var box = boundary.getBoundingClientRect();
 							tooltip
-								.style("left", xPosition - (-box.left - 32) + "px")
+								.style("left", xPosition - (-box.left - 20) + "px")
 								.style("top", yPosition - (-box.top +15) + "px")
 								.style("display", "inline")
-								.attr("class", "d3-tip-legend")
-								.html(numberOfXCommits[blockNumber] + " times");
+								.attr("class", "d3-tip-heat-legend")
+								.html("Occured " + numberOfXCommits[blockNumber] + " times");
 							d3.select(this).attr("class", "selected"); //Change the border of the rectangle
 						})
 						.on("mouseout", function() {
 							tooltip.style("display", "none");
 							d3.select(this).attr("class", "noBorder");
-						});
+						})
 
 					// Append text
 					legend_g.append("text")
