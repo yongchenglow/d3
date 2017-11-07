@@ -120,7 +120,7 @@ text.axis-worktime {
 .d3-tip {
 	line-height: 1;
 	padding: 11px;
-	background: rgba(0, 0, 0, 0.8);
+	background: rgba(0, 0, 0, 0.9);
 	color: #fff;
 	border-radius: 4px;
 	font-size: 12px;
@@ -137,7 +137,7 @@ text.axis-worktime {
 	font-size: 10px;
 	width: 157px;
 	line-height: 3;
-	color: rgba(0, 0, 0, 0.8);
+	color: rgba(0, 0, 0, 0.9);
 	content: "\25BC";
 	position: absolute;
 	text-align: center;
@@ -147,7 +147,7 @@ text.axis-worktime {
 .d3-tip-legend {
 	line-height: 1;
 	padding: 11px;
-	background: rgba(0, 0, 0, 0.8);
+	background: rgba(0, 0, 0, 0.9);
 	color: #fff;
 	border-radius: 4px;
 	font-size: 12px;
@@ -165,7 +165,7 @@ text.axis-worktime {
 	font-size: 10px;
 	width: 60px;
 	line-height: 3;
-	color: rgba(0, 0, 0, 0.8);
+	color: rgba(0, 0, 0, 0.9);
 	content: "\25BC";
 	position: absolute;
 	text-align: center;
@@ -175,6 +175,15 @@ text.axis-worktime {
 .tableHeatMap{
 	width: 800px;
 	height: 180px;
+	border: 1px solid black;
+	background-color: white;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.groupBarChart{
+	width: 800px;
+	height: 300px;
 	border: 1px solid black;
 	background-color: white;
 	margin-left: auto;

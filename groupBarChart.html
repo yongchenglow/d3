@@ -14,122 +14,173 @@
 		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 		
 		<!-- Bootstrap -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-	  
-	  	<!-- Customised CSS -->
-		<link href="additionalstyles.css" rel="stylesheet">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/additionalstyles.css" rel="stylesheet">
+		<link href="font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+		<script src="js/jquery-3.2.1.js"></script>
 		
 	</head>
 	
 	<body>
-		<svg width="960" height="500"></svg>
-		<script>
-			// Define the file directory
-			var csvFile = "../data/online-shoppers-by-age-group.csv";
-
-			// Create the division of the chart
-			var svg = d3.select("svg"),
-				margin = {top: 20, right: 20, bottom: 30, left: 40},
-				width = +svg.attr("width") - margin.left - margin.right,
-				height = +svg.attr("height") - margin.top - margin.bottom,
-				groupBarChart = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-			// Greate the group
-			var group = d3.scaleBand()
-				.rangeRound([0, width])
-				.paddingInner(0.1);
-
-			// Create the individual bars
-			var bar = d3.scaleBand()
-				.padding(0.05);
-
-			// Height of the bar
-			var barHeight = d3.scaleLinear()
-				.rangeRound([height, 0]);
-
-			// Colour of the bars
-			var colour = d3.scaleOrdinal()
-				.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-
-			// Input Data into CSV file
-			d3.csv(csvFile, function(d, i, columns) {
-				// Parse the data by changing the CSV values into integers
-				for (var i = 1, n = columns.length; i < n; ++i)
-					d[columns[i]] = +d[columns[i]];
-				return d;
-			}, function(error, data) {
-				// Checks for error
-				if (error) throw error;
-
-				// Slice the data, from a certain index
-				var keys = data.columns.slice(1);
-
-				// Create the bars
-				group.domain(data.map(function(d) { return d.year; }));
-				bar.domain(keys).rangeRound([0, group.bandwidth()]);
-				barHeight.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
-
-			groupBarChart.append("g")
-				.selectAll("g")
-				.data(data)
-				.enter().append("g")
-				.attr("transform", function(d) { return "translate(" + group(d.year) + ",0)"; })
-				.selectAll("rect")
-				.data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
-				.enter().append("rect")
-				.attr("x", function(d) { return bar(d.key); })
-				.attr("y", function(d) { return barHeight(d.value); })
-				.attr("width", bar.bandwidth())
-				.attr("height", function(d) { return height - barHeight(d.value); })
-				.attr("fill", function(d) { return colour(d.key); });
-
-			groupBarChart.append("g")
-				.attr("class", "mono")
-				.attr("transform", "translate(0," + height + ")")
-				.call(d3.axisBottom(group));
-
-			groupBarChart.append("g")
-				.call(d3.axisLeft(barHeight).ticks(null, "s"))
-				.append("text")
-				.attr("x", 2)
-				.attr("y", barHeight(barHeight.ticks().pop()) + 0.5)
-				.attr("dy", "0.32em")
-				.attr("fill", "#000")
-				.attr("font-weight", "bold")
-				.attr("text-anchor", "start")
-				.text("Number of People");
+		<nav class="navbar navbar-inverse navbar-fixed-top" id="mainNav">
+			<div class="container-fluid">
+				<div class="navbar-header">					
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNavbar">
+						<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+        				<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#top">
+						<span class="glyphicon glyphicon-stats"></span>
+						 Data Visualisation
+					</a>
+				</div>
+				<div class="collapse navbar-collapse" id="mainNavbar">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="index.html">Git Commits</a></li>
+						<li><a href="groupBarChart.html">Online Shoppers</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		
+		<!--Profile-->
+		<header id="profile">
+			<br>
+			<br>
+			<div class="container">
+				<br>
+				<div class="text-center">
+					<h1><b>Data Visualisation with D3</b></h1>
+					<h4>Low Yong Cheng</h4>
+					<h4>NUS Computer Engineering Year 3</h4>
+				</div>
+			</div>
+			<div class="container">
+				<div class="text-center">
+					<h3>Number of Internet Users</h3>
+				</div>
+				<div id="internetUser" class="groupBarChart"></div>
+				<br>
+			</div>
+			
+			<script>
+				// Define the file directory
+				var csvFile = "../data/online-shoppers-by-age-group.csv";
 				
-			// Exit method to remove unused elements
-			groupBarChart.exit().remove();
-
-			// Create the legend by Binding Data
-			var legend = groupBarChart.append("g")
-				.attr("text-anchor", "end")
-				.selectAll("g")
-				.data(keys.slice().reverse())
-				.enter().append("g")
-				.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-			// Append the rectangle to the legend group
-			legend.append("rect")
-				.attr("x", width - 19)
-				.attr("width", 19)
-				.attr("height", 19)
-				.attr("fill", colour);
-
-			// Append text to the legend
-			legend.append("text")
-				.attr("x", width - 24)
-				.attr("y", 9.5)
-				.attr("dy", "0.32em")
-				.text(function(d) { return d; });
+				// Create the division of the chart
+				var chartMargin = {top: 30, right: 120, bottom: 30, left: 40},
+					width = 800 - chartMargin.left - chartMargin.right,
+					height = 300 - chartMargin.top - chartMargin.bottom,
+					defaultColor = "#E8E8E8";
 				
-			// Exit method to remove unused elements
-			legend.exit().remove();
-		});
-		</script>
+				// Move the chart
+				var chart = d3.select("#internetUser").append("svg")
+					.attr("width", width + chartMargin.left + chartMargin.right)
+					.attr("height", height + chartMargin.top + chartMargin.bottom)
+					.append("g")
+					.attr("transform", "translate(" + chartMargin.left + "," + chartMargin.top + ")");
+
+				// Input Data into CSV file
+				d3.csv(csvFile, function(d, i, columns) {
+					// Parse the data by changing the CSV values into integers
+					for (var i = 1, n = columns.length; i < n; ++i)
+						d[columns[i]] = +d[columns[i]];
+					return d;
+				}, function(error, data) {
+					// Checks for error
+					if (error) throw error;
+					
+					// Greate the group
+					var group = d3.scaleBand()
+						.rangeRound([0, width])
+						.paddingInner(0.1);
+
+					// Create the individual bars
+					var bar = d3.scaleBand()
+						.padding(0.05);
+
+					// Height of the bar
+					var barHeight = d3.scaleLinear()
+						.rangeRound([height, 0]);
+
+					// Colour of the bars
+					var colour = d3.scaleOrdinal()
+						.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+					// Slice the data, from a certain index
+					var keys = data.columns.slice(1);
+
+					// Create the bars
+					group.domain(data.map(function(d) { return d.year; }));
+					bar.domain(keys).rangeRound([0, group.bandwidth()]);
+					barHeight.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+					
+					
+					// Bind Data
+					var groupBarChart = chart.selectAll("rect").data(data);
+					
+					// Enter Data
+					groupBarChart.enter().append("g")
+						.attr("transform", function(d) { return "translate(" + group(d.year) + ",0)"; })
+						.selectAll("rect")
+						.data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+						.enter().append("rect")
+						.attr("x", function(d) { return bar(d.key); })
+						.attr("y", function(d) { return barHeight(d.value); })
+						.style("fill", defaultColor)
+
+					
+					// Update
+					.merge(groupBarChart).transition().duration(3000)
+						.attr("width", bar.bandwidth())
+						.attr("height", function(d) { return height - barHeight(d.value); })
+						.style("fill", function(d) { return colour(d.key); });
+
+					groupBarChart.enter().append("g")
+						.attr("class", "mono")
+						.attr("transform", "translate(0," + height + ")")
+						.call(d3.axisBottom(group));
+
+					groupBarChart.enter().append("g")
+						.call(d3.axisLeft(barHeight).ticks(null, "s"))
+						.append("text")
+						.attr("x", -30)
+						.attr("y", barHeight(barHeight.ticks().pop()) - 10)
+						.attr("class", "mono")
+						.attr("text-anchor", "start")
+						.text("Number of People");
+
+					// Exit method to remove unused elements
+					groupBarChart.exit().remove();
+
+					// Create the legend by Binding Data
+					var chartLegend = chart.append("g")
+						.attr("text-anchor", "left")
+						.selectAll("g")
+						.data(keys.slice().reverse())
+						.enter().append("g")
+						.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+					// Append the rectangle to the legend group
+					chartLegend.append("rect")
+						.attr("x", width + 10)
+						.attr("y", height - 180)
+						.attr("width", 10)
+						.attr("height", 10)
+						.attr("fill", colour);
+
+					// Append text to the legend
+					chartLegend.append("text")
+						.attr("x", width + 25)
+						.attr("y", height - 180 + 9.5)
+						.attr("class", "mono")
+						.text(function(d) { return d; });
+
+					// Exit method to remove unused elements
+					chartLegend.exit().remove();
+				});
+			</script>
 	</body>
 </html>
